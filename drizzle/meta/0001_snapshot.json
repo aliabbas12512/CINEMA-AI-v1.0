@@ -1,6 +1,6 @@
 {
-  "id": "e48fcfac-9919-4f92-b036-4494e98cd70d",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "2d5913be-ddf0-4808-9ec2-9a33fafba92f",
+  "prevId": "e48fcfac-9919-4f92-b036-4494e98cd70d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -114,34 +114,34 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "assets_project_id_projects_id_fk": {
           "name": "assets_project_id_projects_id_fk",
           "tableFrom": "assets",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "assets_storage_key_unique": {
           "name": "assets_storage_key_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "storage_key"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -226,50 +226,50 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "audio_tracks_project_id_projects_id_fk": {
           "name": "audio_tracks_project_id_projects_id_fk",
           "tableFrom": "audio_tracks",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "audio_tracks_scene_id_scenes_id_fk": {
           "name": "audio_tracks_scene_id_scenes_id_fk",
           "tableFrom": "audio_tracks",
-          "tableTo": "scenes",
           "columnsFrom": [
             "scene_id"
           ],
+          "tableTo": "scenes",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "audio_tracks_asset_id_assets_id_fk": {
           "name": "audio_tracks_asset_id_assets_id_fk",
           "tableFrom": "audio_tracks",
-          "tableTo": "assets",
           "columnsFrom": [
             "asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -334,37 +334,37 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "character_references_character_id_characters_id_fk": {
           "name": "character_references_character_id_characters_id_fk",
           "tableFrom": "character_references",
-          "tableTo": "characters",
           "columnsFrom": [
             "character_id"
           ],
+          "tableTo": "characters",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "character_references_asset_id_assets_id_fk": {
           "name": "character_references_asset_id_assets_id_fk",
           "tableFrom": "character_references",
-          "tableTo": "assets",
           "columnsFrom": [
             "asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -532,24 +532,24 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "characters_project_id_projects_id_fk": {
           "name": "characters_project_id_projects_id_fk",
           "tableFrom": "characters",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -707,9 +707,9 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "lines_project_idx": {
           "name": "lines_project_idx",
@@ -722,63 +722,63 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "dialogue_lines_project_id_projects_id_fk": {
           "name": "dialogue_lines_project_id_projects_id_fk",
           "tableFrom": "dialogue_lines",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "dialogue_lines_scene_id_scenes_id_fk": {
           "name": "dialogue_lines_scene_id_scenes_id_fk",
           "tableFrom": "dialogue_lines",
-          "tableTo": "scenes",
           "columnsFrom": [
             "scene_id"
           ],
+          "tableTo": "scenes",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "dialogue_lines_character_id_characters_id_fk": {
           "name": "dialogue_lines_character_id_characters_id_fk",
           "tableFrom": "dialogue_lines",
-          "tableTo": "characters",
           "columnsFrom": [
             "character_id"
           ],
+          "tableTo": "characters",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "dialogue_lines_audio_asset_id_assets_id_fk": {
           "name": "dialogue_lines_audio_asset_id_assets_id_fk",
           "tableFrom": "dialogue_lines",
-          "tableTo": "assets",
           "columnsFrom": [
             "audio_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -923,24 +923,24 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "generation_jobs_project_id_projects_id_fk": {
           "name": "generation_jobs_project_id_projects_id_fk",
           "tableFrom": "generation_jobs",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1021,24 +1021,24 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "generation_logs_project_id_projects_id_fk": {
           "name": "generation_logs_project_id_projects_id_fk",
           "tableFrom": "generation_logs",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1152,37 +1152,37 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "locations_project_id_projects_id_fk": {
           "name": "locations_project_id_projects_id_fk",
           "tableFrom": "locations",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "locations_reference_asset_id_assets_id_fk": {
           "name": "locations_reference_asset_id_assets_id_fk",
           "tableFrom": "locations",
-          "tableTo": "assets",
           "columnsFrom": [
             "reference_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -1313,24 +1313,24 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "projects_user_id_users_id_fk": {
           "name": "projects_user_id_users_id_fk",
           "tableFrom": "projects",
-          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1501,9 +1501,9 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "provider_jobs_project_idx": {
           "name": "provider_jobs_project_idx",
@@ -1516,37 +1516,37 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "provider_jobs_project_id_projects_id_fk": {
           "name": "provider_jobs_project_id_projects_id_fk",
           "tableFrom": "provider_jobs",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "provider_jobs_generation_job_id_generation_jobs_id_fk": {
           "name": "provider_jobs_generation_job_id_generation_jobs_id_fk",
           "tableFrom": "provider_jobs",
-          "tableTo": "generation_jobs",
           "columnsFrom": [
             "generation_job_id"
           ],
+          "tableTo": "generation_jobs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -1634,37 +1634,37 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "quality_checks_project_id_projects_id_fk": {
           "name": "quality_checks_project_id_projects_id_fk",
           "tableFrom": "quality_checks",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "quality_checks_render_job_id_render_jobs_id_fk": {
           "name": "quality_checks_render_job_id_render_jobs_id_fk",
           "tableFrom": "quality_checks",
-          "tableTo": "render_jobs",
           "columnsFrom": [
             "render_job_id"
           ],
+          "tableTo": "render_jobs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1760,50 +1760,50 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "render_jobs_project_id_projects_id_fk": {
           "name": "render_jobs_project_id_projects_id_fk",
           "tableFrom": "render_jobs",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "render_jobs_output_asset_id_assets_id_fk": {
           "name": "render_jobs_output_asset_id_assets_id_fk",
           "tableFrom": "render_jobs",
-          "tableTo": "assets",
           "columnsFrom": [
             "output_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "render_jobs_thumbnail_asset_id_assets_id_fk": {
           "name": "render_jobs_thumbnail_asset_id_assets_id_fk",
           "tableFrom": "render_jobs",
-          "tableTo": "assets",
           "columnsFrom": [
             "thumbnail_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -1981,63 +1981,63 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "scenes_project_id_projects_id_fk": {
           "name": "scenes_project_id_projects_id_fk",
           "tableFrom": "scenes",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "scenes_location_id_locations_id_fk": {
           "name": "scenes_location_id_locations_id_fk",
           "tableFrom": "scenes",
-          "tableTo": "locations",
           "columnsFrom": [
             "location_id"
           ],
+          "tableTo": "locations",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "scenes_music_asset_id_assets_id_fk": {
           "name": "scenes_music_asset_id_assets_id_fk",
           "tableFrom": "scenes",
-          "tableTo": "assets",
           "columnsFrom": [
             "music_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "scenes_preview_asset_id_assets_id_fk": {
           "name": "scenes_preview_asset_id_assets_id_fk",
           "tableFrom": "scenes",
-          "tableTo": "assets",
           "columnsFrom": [
             "preview_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -2114,24 +2114,24 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "scripts_project_id_projects_id_fk": {
           "name": "scripts_project_id_projects_id_fk",
           "tableFrom": "scripts",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2182,24 +2182,24 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "sessions_user_id_users_id_fk": {
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
-          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2456,9 +2456,9 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "shots_project_idx": {
           "name": "shots_project_idx",
@@ -2471,102 +2471,102 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "shots_project_id_projects_id_fk": {
           "name": "shots_project_id_projects_id_fk",
           "tableFrom": "shots",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "shots_scene_id_scenes_id_fk": {
           "name": "shots_scene_id_scenes_id_fk",
           "tableFrom": "shots",
-          "tableTo": "scenes",
           "columnsFrom": [
             "scene_id"
           ],
+          "tableTo": "scenes",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "shots_speaking_line_id_dialogue_lines_id_fk": {
           "name": "shots_speaking_line_id_dialogue_lines_id_fk",
           "tableFrom": "shots",
-          "tableTo": "dialogue_lines",
           "columnsFrom": [
             "speaking_line_id"
           ],
+          "tableTo": "dialogue_lines",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "shots_keyframe_asset_id_assets_id_fk": {
           "name": "shots_keyframe_asset_id_assets_id_fk",
           "tableFrom": "shots",
-          "tableTo": "assets",
           "columnsFrom": [
             "keyframe_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "shots_video_asset_id_assets_id_fk": {
           "name": "shots_video_asset_id_assets_id_fk",
           "tableFrom": "shots",
-          "tableTo": "assets",
           "columnsFrom": [
             "video_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "shots_lipsync_asset_id_assets_id_fk": {
           "name": "shots_lipsync_asset_id_assets_id_fk",
           "tableFrom": "shots",
-          "tableTo": "assets",
           "columnsFrom": [
             "lipsync_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "shots_sfx_asset_id_assets_id_fk": {
           "name": "shots_sfx_asset_id_assets_id_fk",
           "tableFrom": "shots",
-          "tableTo": "assets",
           "columnsFrom": [
             "sfx_asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -2653,37 +2653,37 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "subtitles_project_id_projects_id_fk": {
           "name": "subtitles_project_id_projects_id_fk",
           "tableFrom": "subtitles",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "subtitles_asset_id_assets_id_fk": {
           "name": "subtitles_asset_id_assets_id_fk",
           "tableFrom": "subtitles",
-          "tableTo": "assets",
           "columnsFrom": [
             "asset_id"
           ],
+          "tableTo": "assets",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2742,10 +2742,10 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -2825,37 +2825,37 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "voices_project_id_projects_id_fk": {
           "name": "voices_project_id_projects_id_fk",
           "tableFrom": "voices",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "voices_character_id_characters_id_fk": {
           "name": "voices_character_id_characters_id_fk",
           "tableFrom": "voices",
-          "tableTo": "characters",
           "columnsFrom": [
             "character_id"
           ],
+          "tableTo": "characters",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2925,38 +2925,38 @@
         "world_bibles_project_id_projects_id_fk": {
           "name": "world_bibles_project_id_projects_id_fk",
           "tableFrom": "world_bibles",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "world_bibles_script_id_scripts_id_fk": {
           "name": "world_bibles_script_id_scripts_id_fk",
           "tableFrom": "world_bibles",
-          "tableTo": "scripts",
           "columnsFrom": [
             "script_id"
           ],
+          "tableTo": "scripts",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "world_bibles_project_id_unique": {
           "name": "world_bibles_project_id_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "project_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -3079,10 +3079,10 @@
     }
   },
   "schemas": {},
+  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
-  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

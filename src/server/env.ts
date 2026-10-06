@@ -83,7 +83,6 @@ const EnvSchema = z.object({
   RETRY_BASE_DELAY_MS: intWithDefault(2000, 10, 120_000),
   PROVIDER_POLL_INTERVAL_MS: intWithDefault(5000, 50, 60_000),
   PROVIDER_TASK_TIMEOUT_SEC: intWithDefault(1800, 10, 4 * 3600),
-  MAX_QC_REGENERATIONS: intWithDefault(1, 0, 5),
   IMAGE_CONCURRENCY: intWithDefault(3, 1, 20),
   VIDEO_CONCURRENCY: intWithDefault(3, 1, 20),
   VOICE_CONCURRENCY: intWithDefault(4, 1, 20),

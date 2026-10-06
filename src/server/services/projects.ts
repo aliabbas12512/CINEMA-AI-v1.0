@@ -106,7 +106,16 @@ export async function startGeneration(db: Db, userId: string, projectId: string,
       .returning({ run: projects.runCount });
     return updated!.run;
   });
-  await enqueue(projectId, run);
+  try {
+    await enqueue(projectId, run);
+  } catch (err) {
+    // Never leave a project claiming to be queued when no job exists.
+    await db
+      .update(projects)
+      .set({ status: "FAILED", error: "Could not queue the generation job. Is Redis reachable? Try again." })
+      .where(eq(projects.id, projectId));
+    throw new ServiceError(503, `Could not queue generation: ${(err as Error).message}`);
+  }
   return { run };
 }
 

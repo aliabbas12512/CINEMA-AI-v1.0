@@ -69,6 +69,12 @@ describe("FFmpeg media pipeline (real ffmpeg)", () => {
     const qc = await qcFinal(final, { width: 1920, height: 1080, fps: 24, durationSec: 8.5, expectSubtitleStream: true });
     const failed = qc.results.filter((r) => !r.passed && r.severity === "error");
     expect(failed).toEqual([]);
+    // Burned-in Urdu subtitles render through libass without breaking the output.
+    const burned = path.join(dir, "burned.mp4");
+    await mux({ video, audio: mixed, out: burned, durationSec: 8.5, burnSubtitlePath: srt });
+    const pb = await probe(burned);
+    expect(pb.video?.codec).toBe("h264");
+    expect(pb.durationSec).toBeCloseTo(8.5, 1);
     await thumbnail(final, 1, path.join(dir, "thumb.jpg"));
     expect((await probe(path.join(dir, "thumb.jpg"))).video?.width).toBe(1280);
 

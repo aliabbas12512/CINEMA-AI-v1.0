@@ -145,7 +145,6 @@ export const projects = pgTable(
     settings: jsonb("settings").$type<ProjectSettings>().notNull(),
     error: text("error"),
     runCount: integer("run_count").notNull().default(0),
-    qcRegenerations: integer("qc_regenerations").notNull().default(0),
     finalAssetId: uuid("final_asset_id"),
     thumbnailAssetId: uuid("thumbnail_asset_id"),
     startedAt: timestamp("started_at", { withTimezone: true }),

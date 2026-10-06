@@ -4,7 +4,7 @@ import { getEnv } from "@/server/env";
 
 /**
  * Persistent job queue (BullMQ on Redis). One "pipeline" job per run of a
- * project; jobId = project:run guarantees at most one active run per project.
+ * project; jobId = <project>-run-<n> guarantees at most one job per run.
  * If a worker dies mid-run, BullMQ marks the job stalled and re-delivers it;
  * the idempotent pipeline then resumes from persisted state.
  */
@@ -45,7 +45,7 @@ export function getPipelineQueue(): Queue<PipelineJobData> {
 }
 
 export async function enqueuePipeline(projectId: string, run: number): Promise<void> {
-  await getPipelineQueue().add("run", { projectId, run }, { jobId: `${projectId}:${run}` });
+  await getPipelineQueue().add("run", { projectId, run }, { jobId: `${projectId}-run-${run}` });
 }
 
 export async function closeQueue(): Promise<void> {

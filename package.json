@@ -11,16 +11,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "worker": "tsx src/worker/index.ts",
-    "worker:dev": "tsx watch src/worker/index.ts",
+    "worker": "tsx --env-file-if-exists=.env src/worker/index.ts",
+    "worker:dev": "tsx watch --env-file-if-exists=.env src/worker/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/server/db/migrate.ts",
-    "providers:check": "tsx src/scripts/check-providers.ts"
+    "db:migrate": "tsx --env-file-if-exists=.env src/server/db/migrate.ts",
+    "providers:check": "tsx --env-file-if-exists=.env src/scripts/check-providers.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
@@ -37,6 +37,7 @@
     "pino": "^10.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "server-only": "^0.0.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {

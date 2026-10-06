@@ -150,7 +150,6 @@ CREATE TABLE "projects" (
 	"settings" jsonb NOT NULL,
 	"error" text,
 	"run_count" integer DEFAULT 0 NOT NULL,
-	"qc_regenerations" integer DEFAULT 0 NOT NULL,
 	"final_asset_id" uuid,
 	"thumbnail_asset_id" uuid,
 	"started_at" timestamp with time zone,
