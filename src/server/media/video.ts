@@ -1,3 +1,4 @@
+import path from "node:path";
 import { writeFile } from "node:fs/promises";
 import { ffmpeg, n } from "./ffmpeg";
 import { MAX_SLOWDOWN } from "./timeline";
@@ -90,7 +91,15 @@ export function escapeFilterPath(p: string): string {
   return p.replace(/\\/g, "\\\\").replace(/:/g, "\\:").replace(/'/g, "\\'").replace(/\[/g, "\\[").replace(/\]/g, "\\]").replace(/,/g, "\\,");
 }
 
-export async function mux(a: MuxArgs): Promise<void> {
+export async function mux(input: MuxArgs): Promise<void> {
+  // Absolute paths: the burn-in variant runs FFmpeg with a different working directory.
+  const a: MuxArgs = {
+    ...input,
+    video: path.resolve(input.video),
+    audio: path.resolve(input.audio),
+    out: path.resolve(input.out),
+    softSubtitle: input.softSubtitle ? { ...input.softSubtitle, path: path.resolve(input.softSubtitle.path) } : undefined,
+  };
   const args = ["-i", a.video, "-i", a.audio];
   if (a.softSubtitle) args.push("-i", a.softSubtitle.path);
   args.push("-map", "0:v:0", "-map", "1:a:0");
@@ -98,7 +107,9 @@ export async function mux(a: MuxArgs): Promise<void> {
   if (a.burnSubtitlePath) {
     args.push(
       "-vf",
-      `subtitles='${escapeFilterPath(a.burnSubtitlePath)}':force_style='FontSize=22,Outline=2,Shadow=0,MarginV=40'`,
+      // Run from the subtitle's folder and pass only its (server-generated) file name, so
+      // Windows drive letters/backslashes never have to survive filtergraph escaping.
+      `subtitles='${escapeFilterPath(path.basename(a.burnSubtitlePath))}':force_style='FontSize=22,Outline=2,Shadow=0,MarginV=40'`,
       "-c:v",
       "libx264",
       "-preset",
@@ -114,7 +125,7 @@ export async function mux(a: MuxArgs): Promise<void> {
   args.push("-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2");
   if (a.softSubtitle) args.push("-c:s", "mov_text", "-metadata:s:s:0", `language=${a.softSubtitle.language}`);
   args.push("-t", n(a.durationSec), "-movflags", "+faststart", a.out);
-  await ffmpeg(args);
+  await ffmpeg(args, a.burnSubtitlePath ? { cwd: path.dirname(path.resolve(a.burnSubtitlePath)) } : undefined);
 }
 
 export async function thumbnail(video: string, atSec: number, out: string): Promise<void> {

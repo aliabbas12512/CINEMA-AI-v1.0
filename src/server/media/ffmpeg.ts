@@ -30,11 +30,11 @@ function assertSafeArgs(args: readonly string[]): void {
   }
 }
 
-function run(bin: string, args: readonly string[], opts: { timeoutMs?: number; maxBuffer?: number } = {}): Promise<RunResult> {
+function run(bin: string, args: readonly string[], opts: { timeoutMs?: number; maxBuffer?: number; cwd?: string } = {}): Promise<RunResult> {
   assertSafeArgs(args);
   const maxBuffer = opts.maxBuffer ?? 32 * 1024 * 1024;
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, args, { shell: false, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(bin, args, { shell: false, cwd: opts.cwd, stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "";
     let stderr = "";
     const timer = opts.timeoutMs
@@ -64,9 +64,9 @@ function run(bin: string, args: readonly string[], opts: { timeoutMs?: number; m
   });
 }
 
-export function ffmpeg(args: readonly string[], opts?: { timeoutMs?: number }): Promise<RunResult> {
+export function ffmpeg(args: readonly string[], opts?: { timeoutMs?: number; cwd?: string }): Promise<RunResult> {
   const env = getEnv();
-  return run(env.FFMPEG_PATH, ["-hide_banner", "-nostdin", "-y", ...args], { timeoutMs: opts?.timeoutMs ?? 30 * 60_000 });
+  return run(env.FFMPEG_PATH, ["-hide_banner", "-nostdin", "-y", ...args], { timeoutMs: opts?.timeoutMs ?? 30 * 60_000, cwd: opts?.cwd });
 }
 
 export function ffprobe(args: readonly string[]): Promise<RunResult> {
