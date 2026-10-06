@@ -20,7 +20,9 @@
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file-if-exists=.env src/server/db/migrate.ts",
-    "providers:check": "tsx --env-file-if-exists=.env src/scripts/check-providers.ts"
+    "providers:check": "tsx --env-file-if-exists=.env src/scripts/check-providers.ts",
+    "pipeline:run": "tsx --env-file-if-exists=.env src/scripts/run-pipeline.ts",
+    "verify:offline": "tsx --env-file-if-exists=.env tests/tools/offline-verify.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",

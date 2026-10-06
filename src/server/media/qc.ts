@@ -15,14 +15,17 @@ export async function blackRatio(path: string, durationSec: number): Promise<num
   return durationSec > 0 ? Math.min(1, black / durationSec) : 0;
 }
 
-export async function longestFreeze(path: string): Promise<number> {
+export async function longestFreeze(path: string, durationSec: number): Promise<number> {
   const { stderr } = await ffmpeg(["-i", path, "-vf", "freezedetect=n=0.003:d=1", "-an", "-f", "null", "-"]);
   let longest = 0;
   for (const m of stderr.matchAll(/freeze_duration:\s*(\d+(?:\.\d+)?)/g)) longest = Math.max(longest, Number(m[1]));
-  // A freeze still running at EOF has a start but no duration line.
+  // A freeze still running at EOF has a start but no end: it lasts until the end of the media.
   const starts = [...stderr.matchAll(/freeze_start:\s*(\d+(?:\.\d+)?)/g)].map((m) => Number(m[1]));
   const ends = [...stderr.matchAll(/freeze_end:\s*(\d+(?:\.\d+)?)/g)].length;
-  if (starts.length > ends) longest = Math.max(longest, Number.POSITIVE_INFINITY);
+  if (starts.length > ends) {
+    const openStart = starts[starts.length - 1] ?? 0;
+    longest = Math.max(longest, Math.max(0, durationSec - openStart));
+  }
   return longest;
 }
 
@@ -55,9 +58,9 @@ export async function qcShotClip(path: string, expectedMinSec: number): Promise<
   });
   const br = await blackRatio(path, info.durationSec);
   results.push({ check: "black_frames", passed: br < 0.9, severity: "error", details: { blackRatio: br } });
-  const fr = await longestFreeze(path);
+  const fr = await longestFreeze(path, info.durationSec);
   const frozenWhole = info.durationSec > 0 && fr >= info.durationSec * 0.9;
-  results.push({ check: "frozen_frames", passed: !frozenWhole, severity: "error", details: { longestFreezeSec: Number.isFinite(fr) ? fr : "until_end" } });
+  results.push({ check: "frozen_frames", passed: !frozenWhole, severity: "error", details: { longestFreezeSec: fr } });
   return { results, info };
 }
 
@@ -133,12 +136,12 @@ export async function qcFinal(path: string, exp: FinalExpectations): Promise<{ r
   });
   const br = await blackRatio(path, info.durationSec);
   results.push({ check: "black_frames", passed: br < 0.15, severity: br < 0.4 ? "warning" : "error", details: { blackRatio: br } });
-  const fr = await longestFreeze(path);
+  const fr = await longestFreeze(path, info.durationSec);
   results.push({
     check: "frozen_frames",
-    passed: Number.isFinite(fr) && fr < 8,
+    passed: fr < 8,
     severity: "warning",
-    details: { longestFreezeSec: Number.isFinite(fr) ? fr : "until_end" },
+    details: { longestFreezeSec: fr },
   });
   return { results, info };
 }

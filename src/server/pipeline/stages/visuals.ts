@@ -129,26 +129,40 @@ export async function referencesStage(ctx: PipelineContext): Promise<void> {
   await tracker.complete();
 }
 
-/** Build reference images (location + up to 2 characters) for a shot, with Runway-style tags. */
+/**
+ * Consistency inputs for a shot. Providers that accept reference images get
+ * the location + character primary references (tagged). Providers without
+ * reference support get the full Character/World Bible description instead,
+ * so recurring characters are described identically in every prompt.
+ */
 async function shotReferences(ctx: PipelineContext, shot: Shot, image: ImageProvider): Promise<{ refs: ReferenceImage[]; tagHint: string }> {
   const refs: ReferenceImage[] = [];
   const hints: string[] = [];
-  if (shot.locationKey) {
-    const [loc] = await ctx.db
-      .select()
-      .from(locations)
-      .where(and(eq(locations.projectId, ctx.projectId), eq(locations.key, shot.locationKey)));
-    if (loc?.referenceAssetId) {
+  const useRefs = image.maxReferences > 0;
+  const [loc] = shot.locationKey
+    ? await ctx.db
+        .select()
+        .from(locations)
+        .where(and(eq(locations.projectId, ctx.projectId), eq(locations.key, shot.locationKey)))
+    : [];
+  if (loc) {
+    if (useRefs && loc.referenceAssetId) {
       refs.push({ tag: "place", image: await assetToMedia(ctx, loc.referenceAssetId) });
       hints.push(`set in @place`);
+    } else if (!useRefs) {
+      hints.push(`Setting: ${loc.name} - ${loc.visualPrompt}`);
     }
   }
   const chars = await ctx.db.select().from(characters).where(eq(characters.projectId, ctx.projectId));
   let n = 1;
   for (const key of shot.characterKeys) {
-    if (refs.length >= image.maxReferences) break;
     const c = chars.find((x) => x.key === key);
     if (!c) continue;
+    if (!useRefs) {
+      hints.push(`${c.name}: ${c.visualPrompt}; face ${c.face}; hair ${c.hair}; eyes ${c.eyes}; skin ${c.skinTone}; wearing ${c.clothing}`);
+      continue;
+    }
+    if (refs.length >= image.maxReferences) break;
     // The primary reference is reused for every shot so recurring characters never get redesigned.
     const [primary] = await ctx.db
       .select()
@@ -161,7 +175,7 @@ async function shotReferences(ctx: PipelineContext, shot: Shot, image: ImageProv
     refs.push({ tag, image: await assetToMedia(ctx, primary.assetId) });
     hints.push(`@${tag} is ${c.name}`);
   }
-  return { refs, tagHint: hints.join("; ") };
+  return { refs, tagHint: hints.join(". ") };
 }
 
 /** GENERATING_SCENES: first-frame keyframe per shot, conditioned on character/location references. */
@@ -272,7 +286,8 @@ export async function videoStage(ctx: PipelineContext): Promise<void> {
             durationSec:
               p.capabilities.durations.find((d) => d >= (shot.generationDurationSec ?? 0)) ?? Math.max(...p.capabilities.durations),
             aspect: ctx.settings.aspectRatio,
-            seed: attempt * 15485863,
+            seed: attempt * 15485863 + shot.sequence,
+            camera: shot.camera,
           }),
           validate: async (r) => {
             const p = path.join(ctx.workDir, "validate", `shot-${shot.id}.${r.ext}`);

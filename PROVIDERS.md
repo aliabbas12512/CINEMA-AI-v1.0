@@ -38,6 +38,54 @@ was written against **vendor-published sources only**:
 available). Before production, run `npm run providers:check` (or *Providers → Validate* in the UI),
 then generate a short (1-minute) project and review the output.
 
+## Video without Runway — evaluation (October 2026)
+
+Runway's API requires buying credits before the first call. Alternatives checked:
+
+| Option | Free path? | Source | Decision |
+|---|---|---|---|
+| Google Veo via Gemini API | No — Veo is not on the Gemini API free tier ($0.05–$0.60 per second) | [ai.google.dev pricing](https://ai.google.dev/gemini-api/docs/pricing) | Not free |
+| fal.ai (Kling, LTX, …) | $10 credit **only after adding a payment method** | [fal.ai pricing](https://fal.ai/pricing) | Needs a card |
+| Replicate | No standing free credits for video | [replicate.com](https://replicate.com/collections/try-for-free) | Not free |
+| Hugging Face Inference Providers | $0.10/month free credit | third-party summaries | Too small for video |
+| Luma / Hailuo / Kling web apps | Consumer web credits, not a verified free API | third-party summaries | Not an API path |
+| **Local FFmpeg camera motion** | **Yes — no account** | this repository | **Default (`ffmpeg_motion`)** |
+
+Result: no hosted generative-video API was verified as usable without payment, so the app
+ships with `ffmpeg_motion` and keeps the provider interface open (`VideoProvider`) for Runway,
+Veo, fal or any other API later.
+
+## ffmpeg_motion (default video) — `VIDEO_PROVIDER=ffmpeg_motion`
+
+- Renders each shot from its AI keyframe with FFmpeg `zoompan` (2× supersampled for smooth
+  sub-pixel motion), H.264 1920×1080 (or 1080×1920), 24 fps, any whole duration 2–12 s.
+- The move is chosen from the planner's camera language: establishing/aerial/wide → pull-out;
+  dolly/close-up/low-angle → push-in; tracking/POV/OTS → pan; crane/high-angle → crane-up;
+  orbit → orbit; anything else → gentle drift. Smoothstep easing.
+- Output passes the same shot QC as any provider (decodable, duration, resolution, black
+  frames, frozen frames). Cost recorded as 0 USD.
+- Limitation: no character animation and no lip movement (lip sync providers can still be
+  applied on top).
+
+## Cloudflare Workers AI (images) — `IMAGE_PROVIDER=cloudflare`
+
+Verified against Cloudflare's official docs source (`cloudflare/cloudflare-docs`):
+
+- `POST https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{model}`
+  with `Authorization: Bearer {CLOUDFLARE_API_TOKEN}`; token needs *Workers AI - Read* and
+  *Workers AI - Edit*. Response `{ result: { image: <base64> }, success, errors }`.
+- `@cf/black-forest-labs/flux-1-schnell` (default): input `prompt` (≤ 2048 chars), `steps` (≤ 8,
+  default 4). `@cf/leonardo/lucid-origin`: adds `width`, `height`, `seed`.
+- Pricing: **10,000 Neurons per day free on every account**; flux-1-schnell costs 4.80 neurons
+  per 512×512 tile + 9.60 per step (≈ 58 neurons per 1024² image at 4 steps → ≈ 170 images/day
+  free). The pipeline records neurons per image from the real output size.
+- `validate()` calls `GET /client/v4/user/tokens/verify`.
+- Limitation: no reference-image input. Consistency comes from repeating the stored
+  Character/World Bible description (face, hair, eyes, skin, wardrobe, location look) in every
+  keyframe prompt instead of image conditioning (Runway's tagged references remain available).
+- Network note: `api.cloudflare.com` was not reachable from the build sandbox, so this adapter
+  is verified against the documented contract but **not yet with a live token**.
+
 ## Anthropic (LLM) — `LLM_PROVIDER=anthropic`
 
 - Model: `ANTHROPIC_MODEL` (default `claude-opus-5-5`), adaptive thinking, streaming.
@@ -49,7 +97,7 @@ then generate a short (1-minute) project and review the output.
   reference; unknown models → *cost unavailable*).
 - `validate()`: `models.retrieve(model)`.
 
-## Runway (image + video) — `IMAGE_PROVIDER=runway`, `VIDEO_PROVIDER=runway`
+## Runway (optional, paid) — `IMAGE_PROVIDER=runway`, `VIDEO_PROVIDER=runway`
 
 - Base `https://api.dev.runwayml.com`, `X-Runway-Version` handled by the SDK.
 - Images: `textToImage.create` with `gen4_image` (default) or `gen4_image_turbo`; up to three
@@ -74,7 +122,12 @@ then generate a short (1-minute) project and review the output.
   `gen4.5` fallback). Every clip records which provider/model produced it, flagged `(fallback)`.
 - `validate()`: `organization.retrieve()` (credit balance).
 
-## Azure AI Speech (Urdu voice) — `VOICE_PROVIDER=azure`
+## Azure AI Speech (Urdu voice) — `SPEECH_KEY` + `SPEECH_REGION`
+
+Setting `SPEECH_KEY` selects Azure automatically (or `VOICE_PROVIDER=azure` with
+`VOICE_PROVIDER_API_KEY` / `AZURE_SPEECH_REGION`). Network note: `*.tts.speech.microsoft.com`
+is blocked in the build sandbox, so Azure could not be called live there.
+
 
 - `POST https://{AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
   headers `Ocp-Apim-Subscription-Key`, `Content-Type: application/ssml+xml`,

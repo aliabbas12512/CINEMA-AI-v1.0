@@ -109,6 +109,8 @@ export type VideoRequest = {
   durationSec: number;
   aspect: "16:9" | "9:16";
   seed?: number;
+  /** Planner camera language (e.g. "dolly_in; slow push"), used by motion renderers. */
+  camera?: string;
 };
 
 export type VideoCapabilities = {

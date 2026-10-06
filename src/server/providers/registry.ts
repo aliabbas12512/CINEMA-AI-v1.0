@@ -4,7 +4,9 @@ import { AzureVoiceProvider } from "./adapters/azure-voice";
 import { ElevenLabsMusicProvider, ElevenLabsSfxProvider, ElevenLabsVoiceProvider } from "./adapters/elevenlabs";
 import { RunwayImageProvider, RunwayVideoProvider } from "./adapters/runway";
 import { SyncLipSyncProvider } from "./adapters/sync-lipsync";
-import type { ProviderSet, VoiceProvider } from "./types";
+import { CloudflareImageProvider } from "./adapters/cloudflare-image";
+import { FfmpegMotionVideoProvider } from "./adapters/ffmpeg-motion";
+import type { ImageProvider, ProviderSet, VideoProvider, VoiceProvider } from "./types";
 
 /**
  * Builds the production provider set from environment variables. Anything not
@@ -56,6 +58,48 @@ function buildVoice(
   });
 }
 
+function buildImage(env: Env, issues: ProviderConfigIssue[]): ImageProvider | null {
+  switch (env.IMAGE_PROVIDER) {
+    case "none":
+      return null;
+    case "cloudflare":
+      if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_API_TOKEN) {
+        issues.push({ slot: "IMAGE_PROVIDER", message: "IMAGE_PROVIDER is 'cloudflare' but CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN are missing." });
+        return null;
+      }
+      return safe("IMAGE_PROVIDER", issues, () =>
+        new CloudflareImageProvider({ accountId: env.CLOUDFLARE_ACCOUNT_ID!, apiToken: env.CLOUDFLARE_API_TOKEN!, model: env.IMAGE_MODEL }),
+      );
+    case "runway":
+      if (!env.IMAGE_PROVIDER_API_KEY) {
+        issues.push({ slot: "IMAGE_PROVIDER", message: "IMAGE_PROVIDER is 'runway' but IMAGE_PROVIDER_API_KEY is missing." });
+        return null;
+      }
+      return safe("IMAGE_PROVIDER", issues, () => new RunwayImageProvider({ apiKey: env.IMAGE_PROVIDER_API_KEY!, model: env.IMAGE_MODEL ?? "gen4_image" }));
+  }
+}
+
+function buildVideo(
+  kind: Env["VIDEO_PROVIDER"],
+  model: string | undefined,
+  env: Env,
+  slot: string,
+  issues: ProviderConfigIssue[],
+): VideoProvider | null {
+  switch (kind) {
+    case "none":
+      return null;
+    case "ffmpeg_motion":
+      return new FfmpegMotionVideoProvider();
+    case "runway":
+      if (!env.VIDEO_PROVIDER_API_KEY) {
+        issues.push({ slot, message: `${slot} is 'runway' but VIDEO_PROVIDER_API_KEY is missing.` });
+        return null;
+      }
+      return safe(slot, issues, () => new RunwayVideoProvider({ apiKey: env.VIDEO_PROVIDER_API_KEY!, model: model ?? "gen4.5" }));
+  }
+}
+
 function safe<T>(slot: string, issues: ProviderConfigIssue[], make: () => T): T | null {
   try {
     return make();
@@ -85,25 +129,13 @@ export function buildProviderSet(opts: { narratorGender: "male" | "female" } = {
       ? safe("LLM_PROVIDER", issues, () => new AnthropicLlmProvider({ apiKey: env.ANTHROPIC_API_KEY!, model: env.ANTHROPIC_MODEL }))
       : null;
 
-  const image = need("IMAGE_PROVIDER", env.IMAGE_PROVIDER, env.IMAGE_PROVIDER_API_KEY)
-    ? safe("IMAGE_PROVIDER", issues, () => new RunwayImageProvider({ apiKey: env.IMAGE_PROVIDER_API_KEY!, model: env.IMAGE_MODEL }))
-    : null;
+  const image = buildImage(env, issues);
 
-  const videoPrimary = need("VIDEO_PROVIDER", env.VIDEO_PROVIDER, env.VIDEO_PROVIDER_API_KEY)
-    ? safe("VIDEO_PROVIDER", issues, () => new RunwayVideoProvider({ apiKey: env.VIDEO_PROVIDER_API_KEY!, model: env.VIDEO_MODEL }))
-    : null;
-  let videoFallback = null;
-  if (env.VIDEO_FALLBACK_PROVIDER !== "none") {
-    if (!env.VIDEO_FALLBACK_MODEL) {
-      issues.push({ slot: "VIDEO_FALLBACK_PROVIDER", message: "VIDEO_FALLBACK_MODEL is required when a video fallback is set." });
-    } else if (need("VIDEO_FALLBACK_PROVIDER", env.VIDEO_FALLBACK_PROVIDER, env.VIDEO_PROVIDER_API_KEY)) {
-      videoFallback = safe(
-        "VIDEO_FALLBACK_PROVIDER",
-        issues,
-        () => new RunwayVideoProvider({ apiKey: env.VIDEO_PROVIDER_API_KEY!, model: env.VIDEO_FALLBACK_MODEL! }),
-      );
-    }
-  }
+  const videoPrimary = buildVideo(env.VIDEO_PROVIDER, env.VIDEO_MODEL, env, "VIDEO_PROVIDER", issues);
+  const videoFallback =
+    env.VIDEO_FALLBACK_PROVIDER === "none"
+      ? null
+      : buildVideo(env.VIDEO_FALLBACK_PROVIDER, env.VIDEO_FALLBACK_MODEL, env, "VIDEO_FALLBACK_PROVIDER", issues);
 
   const voicePrimary = buildVoice(env.VOICE_PROVIDER, env.VOICE_PROVIDER_API_KEY, env, opts.narratorGender, "VOICE_PROVIDER", issues);
   const voiceFallback = buildVoice(

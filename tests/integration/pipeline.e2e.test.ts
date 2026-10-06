@@ -19,6 +19,7 @@ import { createProject, requestControl, retryShot, startGeneration } from "@/ser
 import { getStorage } from "@/server/storage";
 import { createUser, deps, resetDatabase, SAMPLE_SCRIPT } from "../helpers";
 import { mockProviderSet, MockVideo, MockVoice } from "../mocks/providers";
+import { FfmpegMotionVideoProvider } from "@/server/providers/adapters/ffmpeg-motion";
 import { getProjectStatus } from "@/server/services/status";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
@@ -151,6 +152,21 @@ describe("generation pipeline end-to-end (mock providers, real DB/FFmpeg/storage
     await retryShot(db(), user.id, project.id, target.id, { regenerateKeyframe: false }, noEnqueue);
     expect(await runPipeline(deps(providers), project.id)).toBe("COMPLETED");
     expect(video.submits.length).toBe(submitsBefore + 1);
+  });
+
+  it("produces a real film with the no-cost ffmpeg_motion video provider (no Runway)", async () => {
+    const { user, project } = await newProject({ lipSync: false });
+    const providers = mockProviderSet({ video: { primary: new FfmpegMotionVideoProvider(), fallback: null } });
+    await startGeneration(db(), user.id, project.id, noEnqueue);
+    expect(await runPipeline(deps(providers), project.id)).toBe("COMPLETED");
+    const rows = await db().select().from(shots).where(eq(shots.projectId, project.id));
+    expect(rows.every((s) => s.videoProvider === "ffmpeg_motion/zoompan-v1")).toBe(true);
+    const [p] = await db().select().from(projects).where(eq(projects.id, project.id));
+    const [final] = await db().select().from(assets).where(eq(assets.id, p!.finalAssetId!));
+    const info = await probe(path.resolve("tmp/test-storage", final!.storageKey));
+    expect(info.video).toMatchObject({ codec: "h264", width: 1920, height: 1080 });
+    const pj = await db().select().from(providerJobs).where(and(eq(providerJobs.projectId, project.id), eq(providerJobs.capability, "video")));
+    expect(pj.every((j) => j.status === "succeeded" && j.costActual === 0 && j.costUnit === "usd")).toBe(true);
   });
 
   it("uses the fallback video provider and records it", async () => {

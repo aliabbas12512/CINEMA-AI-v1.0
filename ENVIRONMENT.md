@@ -47,13 +47,15 @@ orchestrator's secret store instead.
 | `LLM_PROVIDER` | `anthropic` \| `none` | Script analysis + planning |
 | `ANTHROPIC_API_KEY` | secret | Anthropic API key |
 | `ANTHROPIC_MODEL` | default `claude-opus-5-5` | Model id |
-| `IMAGE_PROVIDER` | `runway` \| `none` | References + keyframes |
-| `IMAGE_PROVIDER_API_KEY` | secret | Runway API secret |
-| `IMAGE_MODEL` | `gen4_image` \| `gen4_image_turbo` | |
-| `VIDEO_PROVIDER` | `runway` \| `none` | Image-to-video |
-| `VIDEO_PROVIDER_API_KEY` | secret | Runway API secret (also used by the video fallback) |
-| `VIDEO_MODEL` | `gen4.5` \| `veo3.1` \| `veo3.1_fast` | |
-| `VIDEO_FALLBACK_PROVIDER` | `runway` \| `none` | Optional fallback |
+| `SPEECH_KEY` / `SPEECH_REGION` | secret / region | Azure Speech (selects Azure automatically when `VOICE_PROVIDER` is empty) |
+| `IMAGE_PROVIDER` | `cloudflare` \| `runway` \| `none` | References + keyframes; auto-`cloudflare` when both Cloudflare values are set |
+| `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_API_TOKEN` | id / secret | Cloudflare Workers AI (free 10,000 Neurons/day) |
+| `IMAGE_MODEL` | Cloudflare: `@cf/black-forest-labs/flux-1-schnell` (default), `@cf/leonardo/lucid-origin`; Runway: `gen4_image`, `gen4_image_turbo` | |
+| `IMAGE_PROVIDER_API_KEY` | secret | Runway only |
+| `VIDEO_PROVIDER` | `ffmpeg_motion` (default) \| `runway` \| `none` | `ffmpeg_motion` needs no key |
+| `VIDEO_PROVIDER_API_KEY` | secret | Runway only (also used by a Runway fallback) |
+| `VIDEO_MODEL` | Runway: `gen4.5` \| `veo3.1` \| `veo3.1_fast` | |
+| `VIDEO_FALLBACK_PROVIDER` | `ffmpeg_motion` \| `runway` \| `none` | Optional fallback |
 | `VIDEO_FALLBACK_MODEL` | as `VIDEO_MODEL` | Required when a fallback is set |
 | `VOICE_PROVIDER` | `azure` \| `elevenlabs` \| `none` | Urdu voice |
 | `VOICE_PROVIDER_API_KEY` | secret | Azure Speech key or ElevenLabs key |
@@ -67,7 +69,9 @@ orchestrator's secret store instead.
 | `LIPSYNC_PROVIDER` / `LIPSYNC_PROVIDER_API_KEY` | `sync` \| `none` | Optional |
 | `LIPSYNC_MODEL` | `lipsync-2` (also `lipsync-2-pro`, `sync-3`, …) | |
 
-Required for a complete film: LLM, image, video and voice. Music, SFX and lip sync are optional
+Required for a complete film: Anthropic (`ANTHROPIC_API_KEY`), Azure (`SPEECH_KEY`, `SPEECH_REGION`),
+Cloudflare (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`). Video works with no key (`ffmpeg_motion`).
+Empty values (e.g. `VOICE_PROVIDER=`) are treated as unset. Music, SFX and lip sync are optional
 and shown as "provider not configured" when absent.
 
 ## Pipeline tuning

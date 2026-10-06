@@ -18,6 +18,17 @@
 
 Verify: `ffmpeg -hide_banner -filters | grep -E "loudnorm|sidechaincompress|subtitles"`.
 
+## Minimum provider setup (no Runway)
+
+| Service | What to create | `.env` |
+|---|---|---|
+| Anthropic | API key at console.anthropic.com | `ANTHROPIC_API_KEY` |
+| Azure AI Speech | A *Speech* resource (Azure portal) in a region that offers ur-PK voices | `SPEECH_KEY`, `SPEECH_REGION` |
+| Cloudflare Workers AI | Account ID (dashboard) + API token with *Workers AI - Read* and *Workers AI - Edit* | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
+| Video | nothing — `VIDEO_PROVIDER=ffmpeg_motion` renders locally | — |
+
+Then run `npm run providers:check`; every row should show ✓ before you generate.
+
 ## Local development
 
 ```bash

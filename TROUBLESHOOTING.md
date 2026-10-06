@@ -60,3 +60,14 @@ Make sure web and worker share `STORAGE_LOCAL_DIR`. For multi-host deployments u
 
 `npm test` needs Postgres (database `studio_test`), Redis (db 15) and FFmpeg; override with
 `DATABASE_URL` / `REDIS_URL`. The integration tests truncate tables in the test database.
+
+## Video plays in Chrome but not in an automated test browser
+
+The final MP4 is H.264 + AAC (plays in Chrome, Edge, Firefox, Safari). The open-source
+Chromium bundled with Playwright has no H.264 decoder (`canPlayType` returns ""), so
+`<video>` shows `MEDIA_ERR_SRC_NOT_SUPPORTED` there. Downloads are unaffected.
+
+## Shots look static
+
+With `VIDEO_PROVIDER=ffmpeg_motion` the camera moves over a still keyframe by design; for
+character animation switch to a generative provider (e.g. `VIDEO_PROVIDER=runway`).
