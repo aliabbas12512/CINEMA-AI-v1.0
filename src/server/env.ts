@@ -1,0 +1,144 @@
+import { z } from "zod";
+
+/**
+ * Server-only environment configuration.
+ *
+ * Every secret is read here and nowhere else. This module must never be
+ * imported from a client component.
+ */
+
+const optionalString = z
+  .string()
+  .optional()
+  .transform((v) => (v === undefined || v.trim() === "" ? undefined : v.trim()));
+
+const intWithDefault = (def: number, min = 0, max = Number.MAX_SAFE_INTEGER) =>
+  z.coerce.number().int().min(min).max(max).default(def);
+
+const EnvSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  APP_URL: z.string().url().default("http://localhost:3000"),
+  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
+
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  DATABASE_SSL: z.enum(["true", "false"]).default("false"),
+  REDIS_URL: z.string().min(1).default("redis://127.0.0.1:6379"),
+
+  SESSION_SECRET: z.string().min(32, "SESSION_SECRET must be at least 32 characters"),
+  ALLOW_SIGNUP: z.enum(["true", "false"]).default("true"),
+
+  // Storage
+  STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
+  STORAGE_LOCAL_DIR: z.string().default("./storage"),
+  S3_ENDPOINT: optionalString,
+  S3_REGION: z.string().default("us-east-1"),
+  S3_BUCKET: optionalString,
+  S3_ACCESS_KEY_ID: optionalString,
+  S3_SECRET_ACCESS_KEY: optionalString,
+  S3_FORCE_PATH_STYLE: z.enum(["true", "false"]).default("true"),
+  SIGNED_URL_TTL_SEC: intWithDefault(3600, 60, 7 * 24 * 3600),
+
+  // Work dir for FFmpeg scratch files
+  WORK_DIR: z.string().default("./tmp/work"),
+  FFMPEG_PATH: z.string().default("ffmpeg"),
+  FFPROBE_PATH: z.string().default("ffprobe"),
+
+  // Providers (names select the adapter; empty = not configured)
+  LLM_PROVIDER: z.enum(["anthropic", "none"]).default("anthropic"),
+  ANTHROPIC_API_KEY: optionalString,
+  ANTHROPIC_MODEL: z.string().default("claude-opus-5-5"),
+
+  // Images: Cloudflare Workers AI (free daily allocation) or Runway (paid, optional).
+  IMAGE_PROVIDER: z.enum(["cloudflare", "runway", "none"]).default("none"),
+  IMAGE_PROVIDER_API_KEY: optionalString,
+  IMAGE_MODEL: optionalString,
+  CLOUDFLARE_ACCOUNT_ID: optionalString,
+  CLOUDFLARE_API_TOKEN: optionalString,
+
+  // Video: "ffmpeg_motion" needs no account or payment (camera motion over AI keyframes);
+  // "runway" is an optional paid generative provider.
+  VIDEO_PROVIDER: z.enum(["ffmpeg_motion", "runway", "none"]).default("ffmpeg_motion"),
+  VIDEO_PROVIDER_API_KEY: optionalString,
+  VIDEO_MODEL: optionalString,
+  VIDEO_FALLBACK_PROVIDER: z.enum(["ffmpeg_motion", "runway", "none"]).default("none"),
+  VIDEO_FALLBACK_MODEL: optionalString,
+
+  VOICE_PROVIDER: z.enum(["azure", "elevenlabs", "none"]).default("none"),
+  VOICE_PROVIDER_API_KEY: optionalString,
+  VOICE_FALLBACK_PROVIDER: z.enum(["azure", "elevenlabs", "none"]).default("none"),
+  VOICE_FALLBACK_API_KEY: optionalString,
+  AZURE_SPEECH_REGION: optionalString,
+  // Azure's conventional names; used when VOICE_PROVIDER_API_KEY / AZURE_SPEECH_REGION are unset.
+  SPEECH_KEY: optionalString,
+  SPEECH_REGION: optionalString,
+  ELEVENLABS_TTS_MODEL: z.string().default("eleven_v3"),
+  ELEVENLABS_NARRATOR_VOICE_ID: optionalString,
+  ELEVENLABS_MALE_VOICE_IDS: optionalString,
+  ELEVENLABS_FEMALE_VOICE_IDS: optionalString,
+
+  MUSIC_PROVIDER: z.enum(["elevenlabs", "none"]).default("none"),
+  MUSIC_PROVIDER_API_KEY: optionalString,
+
+  SFX_PROVIDER: z.enum(["elevenlabs", "none"]).default("none"),
+  SFX_PROVIDER_API_KEY: optionalString,
+
+  LIPSYNC_PROVIDER: z.enum(["sync", "none"]).default("none"),
+  LIPSYNC_PROVIDER_API_KEY: optionalString,
+  LIPSYNC_MODEL: z.string().default("lipsync-2"),
+
+  // Pipeline tuning
+  MAX_RETRIES: intWithDefault(3, 0, 10),
+  RETRY_BASE_DELAY_MS: intWithDefault(2000, 10, 120_000),
+  PROVIDER_POLL_INTERVAL_MS: intWithDefault(5000, 50, 60_000),
+  PROVIDER_TASK_TIMEOUT_SEC: intWithDefault(1800, 10, 4 * 3600),
+  IMAGE_CONCURRENCY: intWithDefault(3, 1, 20),
+  VIDEO_CONCURRENCY: intWithDefault(3, 1, 20),
+  VOICE_CONCURRENCY: intWithDefault(4, 1, 20),
+  AUDIO_CONCURRENCY: intWithDefault(3, 1, 20),
+  WORKER_CONCURRENCY: intWithDefault(2, 1, 20),
+
+  // Limits
+  MAX_SCRIPT_CHARS: intWithDefault(60_000, 1000, 500_000),
+  RATE_LIMIT_GENERATIONS_PER_HOUR: intWithDefault(10, 1, 1000),
+  RATE_LIMIT_AUTH_PER_15MIN: intWithDefault(20, 1, 1000),
+});
+
+export type Env = z.infer<typeof EnvSchema>;
+
+let cached: Env | undefined;
+
+export function getEnv(): Env {
+  if (cached) return cached;
+  // Empty values (e.g. `VOICE_PROVIDER=` copied from .env.example) mean "not set".
+  const raw = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== undefined && v.trim() !== ""));
+  const parsed = EnvSchema.safeParse(raw);
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    throw new Error(`Invalid environment configuration: ${issues}`);
+  }
+  cached = applyAliases(parsed.data, raw);
+  return cached;
+}
+
+/**
+ * SPEECH_KEY / SPEECH_REGION (Azure's own naming) select Azure Speech when no
+ * voice provider was chosen explicitly.
+ */
+export function applyAliases(env: Env, raw: Record<string, string | undefined>): Env {
+  const out = { ...env };
+  if (out.SPEECH_KEY) {
+    const voiceExplicit = (raw.VOICE_PROVIDER ?? "").trim() !== "";
+    if (!voiceExplicit) out.VOICE_PROVIDER = "azure";
+    if (out.VOICE_PROVIDER === "azure" && !out.VOICE_PROVIDER_API_KEY) out.VOICE_PROVIDER_API_KEY = out.SPEECH_KEY;
+  }
+  if (!out.AZURE_SPEECH_REGION && out.SPEECH_REGION) out.AZURE_SPEECH_REGION = out.SPEECH_REGION;
+  if (out.CLOUDFLARE_ACCOUNT_ID && out.CLOUDFLARE_API_TOKEN && (raw.IMAGE_PROVIDER ?? "").trim() === "") {
+    out.IMAGE_PROVIDER = "cloudflare";
+  }
+  return out;
+}
+
+/** Test helper: forget the cached env so tests can mutate process.env. */
+export function resetEnvCache(): void {
+  cached = undefined;
+}

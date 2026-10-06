@@ -1,0 +1,19 @@
+node_modules/
+.next/
+out/
+/coverage/
+/storage/
+/tmp/
+playwright-report/
+test-results/
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+
+# Local Redis/DB data written when services are started from the repo folder
+dump.rdb
+*.rdb
