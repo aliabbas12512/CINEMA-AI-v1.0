@@ -248,7 +248,7 @@ foreach ($gate in @(@("lint", "Lint"), @("typecheck", "TypeScript"))) {
 }
 if (-not $SkipTests) {
   $code = Invoke-Native "npm" @("test") "npm-test"
-  $summary = (Select-String -Path (Join-Path $RepoRoot "tmp\npm-test.log") -Pattern "Tests\s+\d+" | Select-Object -Last 1)
+  $summary = (Select-String -Path (Join-Path $RepoRoot "tmp\npm-test.log") -Pattern "^\s*Tests\s+\d+" -CaseSensitive | Select-Object -Last 1)
   $detail = "see tmp\npm-test.log"
   if ($summary) { $detail = $summary.Line.Trim() }
   if ($code -ne 0) { Add-Report "FAIL" "Automated tests" $detail } else { Add-Report "PASS" "Automated tests" $detail }

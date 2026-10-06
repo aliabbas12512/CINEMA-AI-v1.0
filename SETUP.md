@@ -29,6 +29,11 @@ Verify: `ffmpeg -hide_banner -filters | grep -E "loudnorm|sidechaincompress|subt
 
 Then run `npm run providers:check`; every row should show ✓ before you generate.
 
+## Windows quick path
+
+`powershell -ExecutionPolicy Bypass -File scripts\windows\run-cinema-ai.ps1` performs every step
+below automatically (see README). Use the manual steps only if you prefer.
+
 ## Local development
 
 ```bash

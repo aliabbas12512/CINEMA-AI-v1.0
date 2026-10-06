@@ -29,6 +29,22 @@ any future generative video API) can be switched on later with one variable.
 shot plan); characters inside the frame do not move. It is labelled as such in the UI and
 on every shot. See [PROVIDERS.md](PROVIDERS.md) for the alternatives that were evaluated.
 
+## Windows: one command
+
+From the repository folder in PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\run-cinema-ai.ps1
+```
+
+It checks/installs Node.js, Git, FFmpeg and Docker Desktop (winget — approve the UAC prompt),
+starts Postgres + Redis, writes `.env` (keys typed hidden or taken from environment variables,
+never printed), runs `npm ci`, migrations, lint, typecheck, tests and the build, validates every
+provider live, generates a real 60-second film from `examples\sample-story.txt`, verifies the MP4
+with ffprobe and opens it. Result: `tmp\windows-run-report.txt`. If something needs you (UAC,
+Docker first-run, a missing or rejected key) it stops with the exact action; run it again
+afterwards. Options: `-Duration 60 -Email you@example.com -SkipTests -StartApp -NoOpen`.
+
 ## Exact commands
 
 ```bash
