@@ -1,3 +1,4 @@
+import { LIMITED_YUV420P } from "@/server/media/video";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -116,9 +117,9 @@ export class FfmpegMotionVideoProvider implements VideoProvider {
         `crop=${w * 2}:${h * 2}`,
         `zoompan=z='${e.z}':x='${e.x}':y='${e.y}':d=${frames}:s=${w}x${h}:fps=${fps}`,
         "setsar=1",
-        "format=yuv420p",
+        LIMITED_YUV420P,
       ].join(",");
-      await ffmpeg(["-i", input, "-vf", vf, "-frames:v", String(frames), "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-r", String(fps), "-an", out], {
+      await ffmpeg(["-i", input, "-vf", vf, "-frames:v", String(frames), "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", "-color_range", "tv", "-r", String(fps), "-an", out], {
         timeoutMs: 10 * 60_000,
       });
       const data = await readFile(out);

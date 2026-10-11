@@ -3,6 +3,9 @@ import { writeFile } from "node:fs/promises";
 import { ffmpeg, n } from "./ffmpeg";
 import { MAX_SLOWDOWN } from "./timeline";
 
+/** Final filter for every H.264 encode: broadly compatible, limited-range 4:2:0. */
+export const LIMITED_YUV420P = "scale=out_range=tv,format=yuv420p";
+
 /**
  * FFmpeg video processing. Every shot is normalized to an exact frame count
  * at the project resolution/fps so the concatenated picture matches the audio
@@ -41,7 +44,9 @@ export async function normalizeClip(a: NormalizeArgs): Promise<void> {
   );
   if (a.fadeInSec && a.fadeInSec > 0) filters.push(`fade=t=in:st=0:d=${n(a.fadeInSec)}`);
   if (a.fadeOutSec && a.fadeOutSec > 0) filters.push(`fade=t=out:st=${n(Math.max(0, target - a.fadeOutSec))}:d=${n(a.fadeOutSec)}`);
-  filters.push("format=yuv420p");
+  // Limited ("tv") range yuv420p: newer FFmpeg builds keep the full range of
+  // PNG/JPEG sources, which H.264 players and ffprobe treat as yuvj420p.
+  filters.push(LIMITED_YUV420P);
   await ffmpeg([
     "-i",
     a.input,
@@ -60,6 +65,8 @@ export async function normalizeClip(a: NormalizeArgs): Promise<void> {
     "18",
     "-pix_fmt",
     "yuv420p",
+    "-color_range",
+    "tv",
     "-video_track_timescale",
     String(a.fps * 1000),
     a.out,
@@ -109,7 +116,7 @@ export async function mux(input: MuxArgs): Promise<void> {
       "-vf",
       // Run from the subtitle's folder and pass only its (server-generated) file name, so
       // Windows drive letters/backslashes never have to survive filtergraph escaping.
-      `subtitles='${escapeFilterPath(path.basename(a.burnSubtitlePath))}':force_style='FontSize=22,Outline=2,Shadow=0,MarginV=40'`,
+      `subtitles='${escapeFilterPath(path.basename(a.burnSubtitlePath))}':force_style='FontSize=22,Outline=2,Shadow=0,MarginV=40',${LIMITED_YUV420P}`,
       "-c:v",
       "libx264",
       "-preset",
@@ -118,6 +125,8 @@ export async function mux(input: MuxArgs): Promise<void> {
       "18",
       "-pix_fmt",
       "yuv420p",
+      "-color_range",
+      "tv",
     );
   } else {
     args.push("-c:v", "copy");
