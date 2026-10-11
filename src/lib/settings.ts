@@ -13,6 +13,7 @@ export const VISUAL_STYLES = [
   "magical_kingdom",
   "anime_fantasy",
   "family_fantasy",
+  "photorealistic_live_action",
 ] as const;
 
 export const VISUAL_STYLE_LABELS: Record<(typeof VISUAL_STYLES)[number], string> = {
@@ -23,6 +24,7 @@ export const VISUAL_STYLE_LABELS: Record<(typeof VISUAL_STYLES)[number], string>
   magical_kingdom: "Magical Kingdom",
   anime_fantasy: "Anime Fantasy",
   family_fantasy: "Family Fantasy",
+  photorealistic_live_action: "Photorealistic Live-Action",
 };
 
 export const MUSIC_STYLES = [

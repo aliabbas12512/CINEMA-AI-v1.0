@@ -9,6 +9,7 @@ import { getEnv } from "@/server/env";
 import { runPipeline } from "@/server/pipeline/orchestrator";
 import { buildProviderSet, summarizeProviders } from "@/server/providers/registry";
 import { getStorage } from "@/server/storage";
+import { VISUAL_STYLES } from "@/lib/settings";
 import { createProject } from "@/server/services/projects";
 import { getProjectStatus } from "@/server/services/status";
 import { randomBytes } from "node:crypto";
@@ -21,6 +22,7 @@ import { randomBytes } from "node:crypto";
  *
  * The project is owned by --email (created if missing, with a random password
  * printed once) so the result also appears in the web UI.
+ * Optional: --style photorealistic_live_action (or any visual style in src/lib/settings.ts)
  * Resume an existing project:  npm run pipeline:run -- --project <uuid>
  */
 async function main() {
@@ -32,8 +34,12 @@ async function main() {
       title: { type: "string" },
       duration: { type: "string", default: "60" },
       subtitles: { type: "string", default: "ur" },
+      style: { type: "string" },
     },
   });
+  if (values.style && !(VISUAL_STYLES as readonly string[]).includes(values.style)) {
+    throw new Error(`Unknown --style ${values.style}. Use one of: ${VISUAL_STYLES.join(", ")}`);
+  }
   const env = getEnv();
   const db = getDb();
 
@@ -54,7 +60,11 @@ async function main() {
       {
         title: values.title,
         script,
-        settings: { targetDurationSec: Number(values.duration), subtitleLanguage: values.subtitles as "ur" | "en" | "off" },
+        settings: {
+          targetDurationSec: Number(values.duration),
+          subtitleLanguage: values.subtitles as "ur" | "en" | "off",
+          ...(values.style ? { visualStyle: values.style as (typeof VISUAL_STYLES)[number] } : {}),
+        },
       },
       env.MAX_SCRIPT_CHARS,
     );

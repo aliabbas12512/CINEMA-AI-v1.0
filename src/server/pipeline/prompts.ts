@@ -22,6 +22,8 @@ const STYLE_GUIDES: Record<ProjectSettings["visualStyle"], string> = {
     "High-end anime fantasy style, clean line art, cel-shaded characters over painted backgrounds, vivid colors, dramatic lighting, expressive eyes, cinematic framing",
   family_fantasy:
     "Family-friendly fantasy animation, bright inviting lighting, rounded appealing character design, colorful detailed worlds, warm cinematic grading",
+  photorealistic_live_action:
+    "Photorealistic live-action cinematic film still, real-world locations and sets, natural and practical lighting, shot on a 35mm cinema camera with anamorphic lens, realistic skin, fabric and materials, subtle film grain, shallow depth of field, professional color grading; not animation, not cartoon, not 3D render",
 };
 
 export function styleGuide(style: ProjectSettings["visualStyle"]): string {
