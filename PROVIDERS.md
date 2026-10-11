@@ -122,6 +122,7 @@ Verified against Cloudflare's official docs source (`cloudflare/cloudflare-docs`
   | `VIDEO_MODEL` | Durations (s) | 16:9 output | Negative prompt |
   |---|---|---|---|
   | `gen4.5` (default) | 2–10 (integer) | 1280×720 | no |
+  | `gen4_turbo` (cheapest, 5 credits/s) | 5, 10 | 1280×720 | no |
   | `veo3.1` | 4, 6, 8 | 1920×1080 | yes (`audio:false` is sent) |
   | `veo3.1_fast` | 4, 6, 8 | 1920×1080 | yes |
 

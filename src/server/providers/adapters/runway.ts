@@ -159,6 +159,17 @@ const VIDEO_MODELS: Record<string, VideoCapabilities & { ratios: Record<"16:9" |
     nativeHeight: 720,
     ratios: { "16:9": "1280:720", "9:16": "720:1280" },
   },
+  // gen4_turbo: cheapest Runway video model (5 credits/s). The SDK types the
+  // duration as a plain number; 5 and 10 s are accepted by every documented
+  // variant of the endpoint, so only those are offered.
+  gen4_turbo: {
+    durations: [5, 10],
+    maxPromptLength: 1000,
+    supportsNegativePrompt: false,
+    nativeWidth: 1280,
+    nativeHeight: 720,
+    ratios: { "16:9": "1280:720", "9:16": "720:1280" },
+  },
   "veo3.1": {
     durations: [4, 6, 8],
     maxPromptLength: 1000,
@@ -207,7 +218,16 @@ export class RunwayVideoProvider extends RunwayBase implements VideoProvider {
     const ratio = this.ratios[req.aspect];
     try {
       let res: { id: string; estimatedCost: { credits: number } };
-      if (this.info.model === "gen4.5") {
+      if (this.info.model === "gen4_turbo") {
+        res = await this.client.imageToVideo.create({
+          model: "gen4_turbo",
+          promptImage,
+          promptText,
+          ratio: ratio as "1280:720" | "720:1280",
+          duration: req.durationSec,
+          seed: req.seed,
+        });
+      } else if (this.info.model === "gen4.5") {
         res = await this.client.imageToVideo.create({
           model: "gen4.5",
           promptImage,
