@@ -91,13 +91,21 @@ export class CloudflareImageProvider implements ImageProvider {
 
   async validate(): Promise<ValidationResult> {
     try {
-      const res = await fetch("https://api.cloudflare.com/client/v4/user/tokens/verify", {
-        headers: { Authorization: `Bearer ${this.opts.apiToken}` },
-        signal: AbortSignal.timeout(20_000),
-      });
-      const body = (await res.json().catch(() => ({}))) as { success?: boolean; result?: { status?: string } };
-      if (!res.ok || !body.success) return { ok: false, message: `Cloudflare token verification failed (HTTP ${res.status}).` };
-      return { ok: true, message: `Cloudflare API token is ${body.result?.status ?? "valid"}; model ${this.model}.` };
+      // User-owned tokens verify at /user/tokens/verify; account-owned tokens
+      // (Manage account > Account API tokens) verify at /accounts/{id}/tokens/verify.
+      let status = 0;
+      for (const url of ["https://api.cloudflare.com/client/v4/user/tokens/verify", `${this.base}/tokens/verify`]) {
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${this.opts.apiToken}` },
+          signal: AbortSignal.timeout(20_000),
+        });
+        const body = (await res.json().catch(() => ({}))) as { success?: boolean; result?: { status?: string } };
+        if (res.ok && body.success) {
+          return { ok: true, message: `Cloudflare API token is ${body.result?.status ?? "valid"}; model ${this.model}.` };
+        }
+        status = res.status;
+      }
+      return { ok: false, message: `Cloudflare token verification failed (HTTP ${status}).` };
     } catch (err) {
       return { ok: false, message: toProviderError("cloudflare", err).message };
     }
