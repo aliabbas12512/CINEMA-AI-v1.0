@@ -78,6 +78,10 @@ const EnvSchema = z.object({
   ELEVENLABS_MALE_VOICE_IDS: optionalString,
   ELEVENLABS_FEMALE_VOICE_IDS: optionalString,
 
+  // Opt-in: with no voice provider, render a silent film (Urdu/English subtitles only)
+  // instead of stopping at the voice stage. Lines are timed by reading speed.
+  SILENT_FILM: z.enum(["true", "false"]).default("false"),
+
   MUSIC_PROVIDER: z.enum(["elevenlabs", "none"]).default("none"),
   MUSIC_PROVIDER_API_KEY: optionalString,
 

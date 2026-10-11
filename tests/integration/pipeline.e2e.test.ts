@@ -169,6 +169,32 @@ describe("generation pipeline end-to-end (mock providers, real DB/FFmpeg/storage
     expect(pj.every((j) => j.status === "succeeded" && j.costActual === 0 && j.costUnit === "usd")).toBe(true);
   });
 
+  it("SILENT_FILM=true renders a subtitles-only film when no voice provider is configured", async () => {
+    const { user, project } = await newProject({ lipSync: false });
+    const providers = mockProviderSet({ voice: { primary: null, fallback: null }, video: { primary: new FfmpegMotionVideoProvider(), fallback: null } });
+    await startGeneration(db(), user.id, project.id, noEnqueue);
+    const d = deps(providers);
+    expect(await runPipeline({ ...d, env: { ...d.env, SILENT_FILM: "true" } }, project.id)).toBe("COMPLETED");
+    const lines = await db().select().from(dialogueLines).where(eq(dialogueLines.projectId, project.id));
+    expect(lines.every((l) => l.voiceStatus === "skipped" && l.audioAssetId === null && (l.audioDurationSec ?? 0) >= 2)).toBe(true);
+    const subs = await db().select().from(subtitles).where(eq(subtitles.projectId, project.id));
+    expect(subs.length).toBeGreaterThan(0);
+    const [p] = await db().select().from(projects).where(eq(projects.id, project.id));
+    const [final] = await db().select().from(assets).where(eq(assets.id, p!.finalAssetId!));
+    const info = await probe(path.resolve("tmp/test-storage", final!.storageKey));
+    expect(info.video).toMatchObject({ codec: "h264", width: 1920, height: 1080 });
+    expect(info.audio?.codec).toBe("aac");
+  });
+
+  it("without SILENT_FILM a missing voice provider still stops honestly", async () => {
+    const { user, project } = await newProject({ lipSync: false });
+    const providers = mockProviderSet({ voice: { primary: null, fallback: null } });
+    await startGeneration(db(), user.id, project.id, noEnqueue);
+    expect(await runPipeline(deps(providers), project.id)).toBe("FAILED");
+    const [p] = await db().select().from(projects).where(eq(projects.id, project.id));
+    expect(p!.error).toBe("Voice generation provider is not configured.");
+  });
+
   it("uses the fallback video provider and records it", async () => {
     const { user, project } = await newProject({ lipSync: false });
     const primary = new MockVideo("primary-video");

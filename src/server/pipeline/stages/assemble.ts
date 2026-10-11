@@ -53,7 +53,8 @@ export async function assembleStage(ctx: PipelineContext): Promise<{ renderJobId
     // Missing component checks - never assemble around holes.
     const missingShots = shotRows.filter((s) => s.videoStatus !== "completed" || !s.videoAssetId);
     if (missingShots.length) throw new StageFailedError("ASSEMBLING", `${missingShots.length} shot(s) have no generated video.`);
-    const missingLines = lineRows.filter((l) => l.voiceStatus !== "completed" || !l.audioAssetId);
+    const silentOk = (l: (typeof lineRows)[number]) => ctx.env.SILENT_FILM === "true" && l.voiceStatus === "skipped" && l.audioDurationSec !== null;
+    const missingLines = lineRows.filter((l) => !silentOk(l) && (l.voiceStatus !== "completed" || !l.audioAssetId));
     if (missingLines.length) throw new StageFailedError("ASSEMBLING", `${missingLines.length} voice line(s) are missing audio.`);
     const emptyScenes = sceneRows.filter((sc) => !shotRows.some((s) => s.sceneId === sc.id));
     if (emptyScenes.length) throw new StageFailedError("ASSEMBLING", `${emptyScenes.length} scene(s) have no shots.`);
@@ -131,7 +132,9 @@ export async function assembleStage(ctx: PipelineContext): Promise<{ renderJobId
       const sc = sceneRows.find((x) => x.id === t.id)!;
       const sceneLines = lineRows.filter((l) => l.sceneId === sc.id);
       const placed = [];
-      for (const l of sceneLines) placed.push({ path: await assetToFile(ctx, l.audioAssetId!), startSec: l.startOffsetSec ?? 0 });
+      for (const l of sceneLines) {
+        if (l.audioAssetId) placed.push({ path: await assetToFile(ctx, l.audioAssetId), startSec: l.startOffsetSec ?? 0 });
+      }
       const v = path.join(dir, `voice-${sc.sequence}.wav`);
       await placeClips(placed, t.durationSec, v);
       voiceParts.push(v);

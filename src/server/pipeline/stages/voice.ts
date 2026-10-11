@@ -69,7 +69,16 @@ export async function voiceStage(ctx: PipelineContext): Promise<void> {
   if (pending.length === 0 && (await schedulesComplete(ctx))) return;
 
   const tracker = await StageTracker.start(ctx, "GENERATING_VOICE");
-  if (pending.length > 0) {
+  if (pending.length > 0 && !ctx.providers.voice.primary && ctx.env.SILENT_FILM === "true") {
+    if (lines.some((l) => !l.approved)) throw new StageFailedError("GENERATING_VOICE", "Some dialogue lines are not approved.");
+    await ctx.event("warn", "GENERATING_VOICE", "No voice provider configured: SILENT_FILM=true, so this film has no narration (subtitles only).");
+    for (const l of pending) {
+      await ctx.db
+        .update(dialogueLines)
+        .set({ voiceStatus: "skipped", voiceError: null, audioAssetId: null, audioDurationSec: subtitleReadingSec(l.urduText), voiceProvider: null })
+        .where(eq(dialogueLines.id, l.id));
+    }
+  } else if (pending.length > 0) {
     const primary = ctx.providers.voice.primary;
     if (!primary) throw new ProviderNotConfiguredError("Voice");
     if (lines.some((l) => !l.approved)) throw new StageFailedError("GENERATING_VOICE", "Some dialogue lines are not approved.");
@@ -155,6 +164,11 @@ export async function voiceStage(ctx: PipelineContext): Promise<void> {
 
   await computeSchedules(ctx);
   await tracker.complete();
+}
+
+/** On-screen time for a subtitle-only line: ~14 characters/second, clamped to 2-8 s. */
+export function subtitleReadingSec(text: string): number {
+  return Math.min(8, Math.max(2, Math.round((text.trim().length / 14) * 10) / 10));
 }
 
 async function schedulesComplete(ctx: PipelineContext): Promise<boolean> {
