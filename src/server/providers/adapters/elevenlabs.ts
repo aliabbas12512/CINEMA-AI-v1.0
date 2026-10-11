@@ -100,8 +100,9 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
         modelId: this.info.model,
         languageCode: req.locale.split("-")[0],
         outputFormat: OUTPUT_FORMAT,
-        previousText: req.previousText,
-        nextText: req.nextText,
+        // eleven_v3 rejects request stitching (400 unsupported_model: "Providing
+        // previous_text or next_text is not yet supported"), so send it only to other models.
+        ...(this.info.model.startsWith("eleven_v3") ? {} : { previousText: req.previousText, nextText: req.nextText }),
         voiceSettings: { stability: s.stability, similarityBoost: s.similarityBoost, speed: s.speed },
       });
       const data = await streamToBuffer(stream);
