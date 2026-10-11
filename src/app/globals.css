@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #07060b;
+  --color-ink-900: #0d0b14;
+  --color-ink-800: #15121f;
+  --color-ink-700: #1f1a2e;
+  --color-ink-600: #2b2440;
+  --color-gold-300: #f3d9a0;
+  --color-gold-400: #e8c170;
+  --color-gold-500: #d4a245;
+  --color-arcane-400: #9d8cff;
+  --color-arcane-500: #7c6af2;
+  --font-display: "Cinzel", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(124, 106, 242, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(212, 162, 69, 0.12), transparent 60%),
+    var(--color-ink-950);
+  color: #ece8f5;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(31, 26, 46, 0.72), rgba(21, 18, 31, 0.72));
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-gradient-to-r from-gold-500 to-gold-400 text-ink-950 shadow-lg shadow-gold-500/20 hover:brightness-110;
+}
+@utility btn-ghost {
+  @apply btn border border-white/10 bg-white/5 text-white hover:bg-white/10;
+}
+@utility btn-danger {
+  @apply btn border border-red-400/30 bg-red-500/10 text-red-200 hover:bg-red-500/20;
+}
+@utility field {
+  @apply w-full rounded-xl border border-white/10 bg-ink-900/80 px-3 py-2.5 text-sm text-white outline-none ring-arcane-500/40 placeholder:text-white/30 focus:border-arcane-400/60 focus:ring-4;
+}
+@utility label {
+  @apply mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/50;
+}
+.urdu {
+  font-family: var(--font-urdu);
+  direction: rtl;
+  line-height: 2.1;
+}
