@@ -86,6 +86,19 @@ Verified against Cloudflare's official docs source (`cloudflare/cloudflare-docs`
 - Network note: `api.cloudflare.com` was not reachable from the build sandbox, so this adapter
   is verified against the documented contract but **not yet with a live token**.
 
+## Cloudflare Workers AI (free LLM) — `LLM_PROVIDER=cloudflare`
+
+- Endpoint: `POST /client/v4/accounts/{ACCOUNT_ID}/ai/run/@cf/meta/llama-3.3-70b-instruct-fp8-fast`
+  with `messages`, `max_tokens`, `response_format: { type: "json_schema", json_schema }` (JSON Mode;
+  verified in Cloudflare's docs source). The JSON schema is generated from the same Zod schema
+  used for Claude, and the response is re-validated with Zod and the pipeline validators.
+- Context window 24,000 tokens, so long scripts are refused with a clear error.
+- Cost: 26,668 Neurons / M input tokens, 204,805 Neurons / M output tokens, from the same
+  10,000 free Neurons/day as image generation.
+- Selected automatically when `ANTHROPIC_API_KEY` is empty and Cloudflare credentials are set.
+- Trade-off: noticeably weaker Urdu prose and planning than Claude. Use it to start for free;
+  switch to Anthropic for production quality.
+
 ## Anthropic (LLM) — `LLM_PROVIDER=anthropic`
 
 - Model: `ANTHROPIC_MODEL` (default `claude-opus-5-5`), adaptive thinking, streaming.

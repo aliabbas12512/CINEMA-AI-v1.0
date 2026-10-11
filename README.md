@@ -19,6 +19,7 @@ any future generative video API) can be switched on later with one variable.
 | Capability | Provider | Cost to start | Required env |
 |---|---|---|---|
 | Story analysis, scenes, Urdu dialogue | Anthropic Claude | Paid API usage | `ANTHROPIC_API_KEY` |
+| … free alternative (weaker Urdu) | Cloudflare Workers AI `llama-3.3-70b-instruct-fp8-fast` | Free daily Neurons (shared with images) | used automatically when no `ANTHROPIC_API_KEY` and Cloudflare is set |
 | Urdu voice (`ur-PK-AsadNeural`, `ur-PK-UzmaNeural`) | Azure AI Speech | Azure account | `SPEECH_KEY`, `SPEECH_REGION` |
 | Character / location / keyframe images | Cloudflare Workers AI (`flux-1-schnell`) | **10,000 free Neurons/day** (~170 images/day) | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
 | Video clips | `ffmpeg_motion` (local camera motion) | **Free, no account** | `VIDEO_PROVIDER=ffmpeg_motion` (default) |

@@ -44,9 +44,11 @@ const EnvSchema = z.object({
   FFPROBE_PATH: z.string().default("ffprobe"),
 
   // Providers (names select the adapter; empty = not configured)
-  LLM_PROVIDER: z.enum(["anthropic", "none"]).default("anthropic"),
+  // LLM: Anthropic (best quality, paid) or Cloudflare Workers AI (free daily allocation, weaker Urdu).
+  LLM_PROVIDER: z.enum(["anthropic", "cloudflare", "none"]).default("anthropic"),
   ANTHROPIC_API_KEY: optionalString,
   ANTHROPIC_MODEL: z.string().default("claude-opus-5-5"),
+  CLOUDFLARE_LLM_MODEL: optionalString,
 
   // Images: Cloudflare Workers AI (free daily allocation) or Runway (paid, optional).
   IMAGE_PROVIDER: z.enum(["cloudflare", "runway", "none"]).default("none"),
@@ -134,6 +136,10 @@ export function applyAliases(env: Env, raw: Record<string, string | undefined>):
   if (!out.AZURE_SPEECH_REGION && out.SPEECH_REGION) out.AZURE_SPEECH_REGION = out.SPEECH_REGION;
   if (out.CLOUDFLARE_ACCOUNT_ID && out.CLOUDFLARE_API_TOKEN && (raw.IMAGE_PROVIDER ?? "").trim() === "") {
     out.IMAGE_PROVIDER = "cloudflare";
+  }
+  // Without an Anthropic key, the free Cloudflare LLM is used when Cloudflare is configured.
+  if (out.LLM_PROVIDER === "anthropic" && !out.ANTHROPIC_API_KEY && out.CLOUDFLARE_ACCOUNT_ID && out.CLOUDFLARE_API_TOKEN) {
+    out.LLM_PROVIDER = "cloudflare";
   }
   return out;
 }

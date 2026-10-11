@@ -5,8 +5,9 @@ import { ElevenLabsMusicProvider, ElevenLabsSfxProvider, ElevenLabsVoiceProvider
 import { RunwayImageProvider, RunwayVideoProvider } from "./adapters/runway";
 import { SyncLipSyncProvider } from "./adapters/sync-lipsync";
 import { CloudflareImageProvider } from "./adapters/cloudflare-image";
+import { CloudflareLlmProvider } from "./adapters/cloudflare-llm";
 import { FfmpegMotionVideoProvider } from "./adapters/ffmpeg-motion";
-import type { ImageProvider, ProviderSet, VideoProvider, VoiceProvider } from "./types";
+import type { ImageProvider, LlmProvider, ProviderSet, VideoProvider, VoiceProvider } from "./types";
 
 /**
  * Builds the production provider set from environment variables. Anything not
@@ -56,6 +57,29 @@ function buildVoice(
     maleVoiceIds: list(env.ELEVENLABS_MALE_VOICE_IDS),
     femaleVoiceIds: list(env.ELEVENLABS_FEMALE_VOICE_IDS),
   });
+}
+
+function buildLlm(
+  env: Env,
+  issues: ProviderConfigIssue[],
+  need: (slot: string, kind: string, key: string | undefined) => boolean,
+): LlmProvider | null {
+  switch (env.LLM_PROVIDER) {
+    case "none":
+      return null;
+    case "anthropic":
+      return need("LLM_PROVIDER", "anthropic", env.ANTHROPIC_API_KEY)
+        ? safe("LLM_PROVIDER", issues, () => new AnthropicLlmProvider({ apiKey: env.ANTHROPIC_API_KEY!, model: env.ANTHROPIC_MODEL }))
+        : null;
+    case "cloudflare":
+      if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_API_TOKEN) {
+        issues.push({ slot: "LLM_PROVIDER", message: "LLM_PROVIDER is 'cloudflare' but CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN are missing." });
+        return null;
+      }
+      return safe("LLM_PROVIDER", issues, () =>
+        new CloudflareLlmProvider({ accountId: env.CLOUDFLARE_ACCOUNT_ID!, apiToken: env.CLOUDFLARE_API_TOKEN!, model: env.CLOUDFLARE_LLM_MODEL }),
+      );
+  }
 }
 
 function buildImage(env: Env, issues: ProviderConfigIssue[]): ImageProvider | null {
@@ -124,10 +148,7 @@ export function buildProviderSet(opts: { narratorGender: "male" | "female" } = {
     return true;
   };
 
-  const llm =
-    env.LLM_PROVIDER === "anthropic" && need("LLM_PROVIDER", "anthropic", env.ANTHROPIC_API_KEY)
-      ? safe("LLM_PROVIDER", issues, () => new AnthropicLlmProvider({ apiKey: env.ANTHROPIC_API_KEY!, model: env.ANTHROPIC_MODEL }))
-      : null;
+  const llm = buildLlm(env, issues, need);
 
   const image = buildImage(env, issues);
 

@@ -44,7 +44,8 @@ orchestrator's secret store instead.
 
 | Variable | Values | Description |
 |---|---|---|
-| `LLM_PROVIDER` | `anthropic` \| `none` | Script analysis + planning |
+| `LLM_PROVIDER` | `anthropic` \| `cloudflare` \| `none` | Script analysis + planning. `anthropic` without `ANTHROPIC_API_KEY` falls back to `cloudflare` when Cloudflare credentials are set |
+| `CLOUDFLARE_LLM_MODEL` | `@cf/meta/llama-3.3-70b-instruct-fp8-fast` (default) | Free Workers AI LLM (JSON Mode, 24k context) |
 | `ANTHROPIC_API_KEY` | secret | Anthropic API key |
 | `ANTHROPIC_MODEL` | default `claude-opus-5-5` | Model id |
 | `SPEECH_KEY` / `SPEECH_REGION` | secret / region | Azure Speech (selects Azure automatically when `VOICE_PROVIDER` is empty) |

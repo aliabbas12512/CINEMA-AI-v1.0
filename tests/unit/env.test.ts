@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { getEnv, resetEnvCache } from "@/server/env";
 
-const KEYS = ["SPEECH_KEY", "SPEECH_REGION", "VOICE_PROVIDER", "VOICE_PROVIDER_API_KEY", "AZURE_SPEECH_REGION", "CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "IMAGE_PROVIDER", "VIDEO_PROVIDER"];
+const KEYS = ["SPEECH_KEY", "SPEECH_REGION", "VOICE_PROVIDER", "VOICE_PROVIDER_API_KEY", "AZURE_SPEECH_REGION", "CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "IMAGE_PROVIDER", "VIDEO_PROVIDER", "LLM_PROVIDER", "ANTHROPIC_API_KEY"];
 const saved = Object.fromEntries(KEYS.map((k) => [k, process.env[k]]));
 
 afterEach(() => {
@@ -33,6 +33,17 @@ describe("environment", () => {
     expect(env.VOICE_PROVIDER_API_KEY).toBe("k");
     expect(env.AZURE_SPEECH_REGION).toBe("eastus");
     expect(env.IMAGE_PROVIDER).toBe("cloudflare");
+  });
+  it("without an Anthropic key, Cloudflare credentials select the free Cloudflare LLM", () => {
+    for (const k of KEYS) delete process.env[k];
+    process.env.LLM_PROVIDER = "anthropic";
+    process.env.CLOUDFLARE_ACCOUNT_ID = "0123456789abcdef0123456789abcdef";
+    process.env.CLOUDFLARE_API_TOKEN = "t";
+    resetEnvCache();
+    expect(getEnv().LLM_PROVIDER).toBe("cloudflare");
+    process.env.ANTHROPIC_API_KEY = "sk-ant-x";
+    resetEnvCache();
+    expect(getEnv().LLM_PROVIDER).toBe("anthropic");
   });
   it("an explicit provider choice wins over aliases", () => {
     process.env.SPEECH_KEY = "k";
