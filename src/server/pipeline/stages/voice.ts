@@ -1,3 +1,4 @@
+import { errorText } from "../context";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { characters, dialogueLines, qualityChecks, scenes, shots, voices, type DialogueLine } from "@/server/db/schema";
 import { probe } from "@/server/media/probe";
@@ -153,9 +154,9 @@ export async function voiceStage(ctx: PipelineContext): Promise<void> {
         failed++;
         await ctx.db
           .update(dialogueLines)
-          .set({ voiceStatus: "failed", voiceError: (err as Error).message.slice(0, 2000) })
+          .set({ voiceStatus: "failed", voiceError: errorText(err).slice(0, 2000) })
           .where(eq(dialogueLines.id, line.id));
-        await ctx.event("error", "GENERATING_VOICE", `Voice generation failed for a line: ${(err as Error).message}`, { line_id: line.id });
+        await ctx.event("error", "GENERATING_VOICE", `Voice generation failed for a line: ${errorText(err)}`, { line_id: line.id });
       }
       await tracker.progress({ completed, total: lines.length, failed, message: "Generating Urdu narration and dialogue" });
     });

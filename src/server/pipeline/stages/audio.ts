@@ -1,3 +1,4 @@
+import { errorText } from "../context";
 import { asc, eq } from "drizzle-orm";
 import { qualityChecks, scenes, shots } from "@/server/db/schema";
 import { qcAudioFile } from "@/server/media/qc";
@@ -118,7 +119,7 @@ export async function audioStage(ctx: PipelineContext): Promise<void> {
     } catch (err) {
       if (isInterrupt(err)) throw err;
       failed++;
-      const msg = (err as Error).message.slice(0, 2000);
+      const msg = errorText(err).slice(0, 2000);
       if (u.kind === "music") await ctx.db.update(scenes).set({ musicStatus: "failed", musicError: msg }).where(eq(scenes.id, u.id));
       else await ctx.db.update(shots).set({ sfxStatus: "failed", error: `SFX: ${msg}` }).where(eq(shots.id, u.id));
       await ctx.event("error", "GENERATING_AUDIO", `${u.kind} generation failed: ${msg}`, { id: u.id });

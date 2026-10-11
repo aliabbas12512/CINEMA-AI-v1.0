@@ -93,3 +93,23 @@ export async function createContext(deps: PipelineDeps, projectId: string, run: 
     },
   };
 }
+
+/**
+ * Human-readable error text including the root cause. Database errors from
+ * Drizzle carry only "Failed query: <sql> params: ..." in `message`; the real
+ * reason (e.g. connection refused, encoding error) is in `cause`.
+ */
+export function errorText(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  let msg = err.message;
+  if (msg.startsWith("Failed query:")) msg = `Database query failed (${msg.slice(14, 80).split("\n")[0]}...)`;
+  const seen = new Set<unknown>([err]);
+  let cause = (err as { cause?: unknown }).cause;
+  while (cause instanceof Error && !seen.has(cause)) {
+    seen.add(cause);
+    const c = cause.message.startsWith("Failed query:") ? "database query failed" : cause.message;
+    if (c && !msg.includes(c)) msg += ` <- ${c}`;
+    cause = (cause as { cause?: unknown }).cause;
+  }
+  return msg;
+}

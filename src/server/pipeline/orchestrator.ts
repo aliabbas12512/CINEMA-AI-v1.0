@@ -1,3 +1,4 @@
+import { errorText } from "./context";
 import { and, eq, inArray } from "drizzle-orm";
 import { ProjectSettingsSchema } from "@/lib/settings";
 import { generationJobs, projects, type PipelineStage } from "@/server/db/schema";
@@ -94,7 +95,7 @@ export async function runPipeline(deps: PipelineDeps, projectId: string): Promis
     const message =
       err instanceof ProviderNotConfiguredError || err instanceof StageFailedError
         ? err.message
-        : `Unexpected error: ${(err as Error).message ?? String(err)}`;
+        : `Unexpected error: ${errorText(err)}`;
     await markRunningStages(ctx, "FAILED", message);
     await deps.db.update(projects).set({ status: "FAILED", control: "none", error: message.slice(0, 4000) }).where(eq(projects.id, projectId));
     await ctx.event("error", null, message, { stack: (err as Error).stack?.split("\n").slice(0, 6).join("\n") });

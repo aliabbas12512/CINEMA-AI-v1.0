@@ -1,3 +1,4 @@
+import { errorText } from "../context";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { asc, eq } from "drizzle-orm";
@@ -247,7 +248,7 @@ export async function assembleStage(ctx: PipelineContext): Promise<{ renderJobId
     await tracker.complete(`Rendered ${timeline.durationSec.toFixed(1)}s in ${Math.round((Date.now() - started) / 1000)}s`);
     return { renderJobId: render!.id, finalPath, timeline };
   } catch (err) {
-    await ctx.db.update(renderJobs).set({ status: "FAILED", error: (err as Error).message.slice(0, 4000), completedAt: new Date() }).where(eq(renderJobs.id, render!.id));
+    await ctx.db.update(renderJobs).set({ status: "FAILED", error: errorText(err).slice(0, 4000), completedAt: new Date() }).where(eq(renderJobs.id, render!.id));
     throw err;
   }
 }

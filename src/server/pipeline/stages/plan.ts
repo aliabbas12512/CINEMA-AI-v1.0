@@ -1,3 +1,4 @@
+import { errorText } from "../context";
 import { asc, eq } from "drizzle-orm";
 import { characters, dialogueLines, locations, scenes, shots, worldBibles } from "@/server/db/schema";
 import {
@@ -181,7 +182,7 @@ export async function planStage(ctx: PipelineContext): Promise<void> {
         });
         done++;
       } catch (err) {
-        const msg = (err as Error).message;
+        const msg = errorText(err);
         if ((err as Error).name === "PipelineCancelledError" || (err as Error).name === "PipelinePausedError") throw err;
         failures.push(`Scene ${scene.sequence}: ${msg}`);
         await ctx.db.update(scenes).set({ shotPlanStatus: "failed", shotPlanError: msg.slice(0, 2000) }).where(eq(scenes.id, scene.id));

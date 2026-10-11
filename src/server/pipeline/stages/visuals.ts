@@ -1,3 +1,4 @@
+import { errorText } from "../context";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { and, asc, desc, eq } from "drizzle-orm";
@@ -118,7 +119,7 @@ export async function referencesStage(ctx: PipelineContext): Promise<void> {
     } catch (err) {
       if (isInterrupt(err)) throw err;
       failed++;
-      const msg = (err as Error).message.slice(0, 2000);
+      const msg = errorText(err).slice(0, 2000);
       if (job.kind === "character") await ctx.db.update(characters).set({ referenceStatus: "failed", referenceError: msg }).where(eq(characters.id, job.id));
       else await ctx.db.update(locations).set({ referenceStatus: "failed", referenceError: msg }).where(eq(locations.id, job.id));
       await ctx.event("error", "GENERATING_CHARACTERS", `Reference image failed: ${msg}`, { entity: job.kind, id: job.id });
@@ -225,8 +226,8 @@ export async function keyframesStage(ctx: PipelineContext): Promise<void> {
         throw err;
       }
       failed++;
-      await ctx.db.update(shots).set({ keyframeStatus: "failed", error: (err as Error).message.slice(0, 2000) }).where(eq(shots.id, shot.id));
-      await ctx.event("error", "GENERATING_SCENES", `Keyframe failed: ${(err as Error).message}`, { shot_id: shot.id });
+      await ctx.db.update(shots).set({ keyframeStatus: "failed", error: errorText(err).slice(0, 2000) }).where(eq(shots.id, shot.id));
+      await ctx.event("error", "GENERATING_SCENES", `Keyframe failed: ${errorText(err)}`, { shot_id: shot.id });
     }
     await report();
   });
@@ -333,7 +334,7 @@ export async function videoStage(ctx: PipelineContext): Promise<void> {
         } catch (err) {
           if (isInterrupt(err)) throw err;
           // Non-blocking: the un-synced clip is used and the failure is visible on the shot.
-          await ctx.event("warn", "GENERATING_VIDEO", `Lip sync failed; using original clip: ${(err as Error).message}`, { shot_id: shot.id });
+          await ctx.event("warn", "GENERATING_VIDEO", `Lip sync failed; using original clip: ${errorText(err)}`, { shot_id: shot.id });
         }
       }
     } catch (err) {
@@ -343,9 +344,9 @@ export async function videoStage(ctx: PipelineContext): Promise<void> {
       }
       failed++;
       if (shot.videoStatus !== "completed") {
-        await ctx.db.update(shots).set({ videoStatus: "failed", error: (err as Error).message.slice(0, 2000) }).where(eq(shots.id, shot.id));
+        await ctx.db.update(shots).set({ videoStatus: "failed", error: errorText(err).slice(0, 2000) }).where(eq(shots.id, shot.id));
       }
-      await ctx.event("error", "GENERATING_VIDEO", `Shot failed: ${(err as Error).message}`, { shot_id: shot.id, scene_id: shot.sceneId });
+      await ctx.event("error", "GENERATING_VIDEO", `Shot failed: ${errorText(err)}`, { shot_id: shot.id, scene_id: shot.sceneId });
       await report();
     }
   });
@@ -412,7 +413,7 @@ async function lipsyncShot(ctx: PipelineContext, shot: Shot): Promise<void> {
       await ctx.db.update(shots).set({ lipsyncStatus: "pending" }).where(eq(shots.id, shot.id));
       throw err;
     }
-    await ctx.db.update(shots).set({ lipsyncStatus: "failed", error: `Lip sync: ${(err as Error).message}`.slice(0, 2000) }).where(eq(shots.id, shot.id));
+    await ctx.db.update(shots).set({ lipsyncStatus: "failed", error: `Lip sync: ${errorText(err)}`.slice(0, 2000) }).where(eq(shots.id, shot.id));
     throw err;
   }
 }
